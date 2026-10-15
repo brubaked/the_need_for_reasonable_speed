@@ -171,7 +171,7 @@
         <div>
           <div class="flex items-center justify-between text-xs text-slate-400 uppercase tracking-wider font-semibold">
             <span id="timeCardTitle">Signal-Adjusted Time Saved</span>
-            <span>⏱️ Kinematics + HCM</span>
+            <a href="https://en.wikipedia.org/wiki/Highway_Capacity_Manual" target="_blank" rel="noopener noreferrer" class="hover:text-slate-200 underline">⏱️ Kinematics + HCM</a>
           </div>
           <div id="timeHeadline" class="text-4xl font-extrabold text-white mt-3 tracking-tight">
             0m 42s
@@ -205,7 +205,7 @@
         <div>
           <div class="flex items-center justify-between text-xs text-slate-400 uppercase tracking-wider font-semibold">
             <span>Pedestrian Fatality Risk</span>
-            <span>🚶 AAA Tefft Model</span>
+            <a href="https://aaafoundation.org/impact-speed-pedestrians-risk-severe-injury-death/" target="_blank" rel="noopener noreferrer" class="hover:text-slate-200 underline">🚶 AAA Tefft Model</a>
           </div>
           <!-- Absolute Risk Headline -->
           <div class="flex items-baseline gap-2 mt-3">
@@ -237,7 +237,7 @@
         <div>
           <div class="flex items-center justify-between text-xs text-slate-400 uppercase tracking-wider font-semibold">
             <span>Driver Fatal Crash Risk</span>
-            <span>🚗 Nilsson Power Model</span>
+            <a href="https://road-safety.transport.ec.europa.eu/eu-road-safety-policy/priorities/safe-road-use/safe-speed/archive/speed-and-accident-risk/power-model_en" target="_blank" rel="noopener noreferrer" class="hover:text-slate-200 underline">🚗 Nilsson Power Model</a>
           </div>
           <!-- Absolute Risk Headline -->
           <div class="flex items-baseline gap-2 mt-3">
@@ -362,8 +362,7 @@
           );
           const extraStopLoss = signals * redPhaseProb * baseStopLossSec * speedExcessRatio;
 
-          // Cap total signal penalty at theoreticalSavedSec so normal speeding doesn't invert trip time,
-          // or allow slight startup loss cap
+          // Cap total signal penalty at theoreticalSavedSec so normal speeding doesn't invert trip time
           const totalPenalty = Math.min(theoreticalSavedSec, coordinatedClawback + uncoordCatchup + extraStopLoss);
           delayAtActualSec = delayAtLimitSec + totalPenalty;
         } else if (actualSpeed < limitSpeed) {
