@@ -46,7 +46,7 @@
         <div id="panelMap" class="space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <span id="mapStatus" class="text-xs font-medium text-blue-400">
-              Click on the map to set your Start Point (A), then click again for Destination (B).
+              Showing 5.0 mi preset route. Click any two points on the map for a live OSM route.
             </span>
             <button onclick="clearRoute()" class="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
               Reset Map
@@ -56,40 +56,40 @@
           <div id="routeSummaryBar" class="grid grid-cols-3 gap-2 pt-1 text-center text-xs">
             <div class="bg-slate-800/70 rounded p-2">
               <span class="text-slate-400 block">Total Distance</span>
-              <span id="mapDistLabel" class="font-bold text-sm text-white">5.0 mi (Preset)</span>
+              <span id="mapDistLabel" class="font-bold text-sm text-white">5.0 miles</span>
             </div>
             <div class="bg-slate-800/70 rounded p-2">
               <span class="text-slate-400 block">Avg Speed Limit</span>
               <span id="mapAvgLimitLabel" class="font-bold text-sm text-white">38 mph</span>
             </div>
             <div class="bg-slate-800/70 rounded p-2">
-              <span class="text-slate-400 block">Est. Traffic Signals</span>
-              <span id="mapSignalsLabel" class="font-bold text-sm text-white">9 lights</span>
+              <span class="text-slate-400 block">Traffic Signals</span>
+              <span id="mapSignalsLabel" class="font-bold text-sm text-white">10 lights</span>
             </div>
           </div>
         </div>
 
-        <!-- MANUAL MODE PANEL (Hidden by default) -->
+        <!-- MANUAL MODE PANEL -->
         <div id="panelManual" class="hidden space-y-4">
           <h2 class="text-sm font-semibold text-slate-200 border-b border-slate-800 pb-2">Manual Corridor Configuration</h2>
           
           <div>
             <div class="flex justify-between text-xs mb-1">
-              <label class="text-slate-400">Road Classification (Sets HCM Signal Cycle &amp; Green Wave)</label>
+              <label for="manualHighwayType" class="text-slate-400">Road Classification (HCM Cycle &amp; Progression)</label>
               <span id="manualRoadLabel" class="font-semibold text-blue-400">Primary Arterial (120s cycle)</span>
             </div>
-            <select id="manualHighwayType" onchange="recalculate()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
+            <select id="manualHighwayType" onchange="onManualRoadClassChange()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
               <option value="primary" selected>Primary Suburban Arterial (120s cycle, High Green Wave Sync)</option>
               <option value="secondary">Secondary Collector (90s cycle, Moderate Sync)</option>
               <option value="tertiary">Tertiary / Downtown Grid (70s cycle, Low Sync)</option>
-              <option value="residential">Residential Local Street (60s cycle, Uncoordinated)</option>
+              <option value="residential">Residential Local Street (60s cycle, Minimal Sync)</option>
               <option value="motorway">Controlled-Access Highway / Freeway (No Signals)</option>
             </select>
           </div>
 
           <div>
             <div class="flex justify-between text-xs mb-1">
-              <label class="text-slate-400">Trip Distance</label>
+              <label for="manualDist" class="text-slate-400">Trip Distance</label>
               <span id="manualDistVal" class="font-bold text-white">10 miles</span>
             </div>
             <input id="manualDist" type="range" min="1" max="50" step="0.5" value="10" oninput="recalculate()" class="w-full" />
@@ -97,18 +97,18 @@
 
           <div>
             <div class="flex justify-between text-xs mb-1">
-              <label class="text-slate-400">Posted Speed Limit</label>
-              <span id="manualLimitVal" class="font-bold text-white">35 mph</span>
+              <label for="manualLimit" class="text-slate-400">Posted Speed Limit</label>
+              <span id="manualLimitVal" class="font-bold text-white">45 mph</span>
             </div>
-            <input id="manualLimit" type="range" min="20" max="75" step="5" value="35" oninput="recalculate()" class="w-full" />
+            <input id="manualLimit" type="range" min="20" max="75" step="5" value="45" oninput="recalculate()" class="w-full" />
           </div>
 
           <div>
             <div class="flex justify-between text-xs mb-1">
-              <label class="text-slate-400">Signalized Intersections on Route</label>
-              <span id="manualSignalsVal" class="font-bold text-white">12 signals</span>
+              <label for="manualSignals" class="text-slate-400">Signalized Intersections on Route</label>
+              <span id="manualSignalsVal" class="font-bold text-white">20 signals</span>
             </div>
-            <input id="manualSignals" type="range" min="0" max="40" step="1" value="12" oninput="recalculate()" class="w-full" />
+            <input id="manualSignals" type="range" min="0" max="50" step="1" value="20" oninput="recalculate()" class="w-full" />
           </div>
         </div>
       </div>
@@ -118,7 +118,7 @@
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Speed Offset Controls</span>
-            <span id="offsetBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            <span id="offsetBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
               +10 mph Over Limit
             </span>
           </div>
@@ -135,11 +135,11 @@
           <div class="bg-slate-950/70 border border-slate-800/80 rounded-lg p-3 space-y-2 text-xs">
             <div class="flex justify-between">
               <span class="text-slate-400">Effective Driving Speed:</span>
-              <span id="effectiveSpeedLabel" class="font-bold text-white">48 mph (Min Floor: 10 mph)</span>
+              <span id="effectiveSpeedLabel" class="font-bold text-white">48 mph (Limit: 38 mph)</span>
             </div>
             <div class="flex justify-between">
               <span class="text-slate-400">1.5s Reaction + Braking Distance:</span>
-              <span id="stoppingDistLabel" class="font-bold text-amber-400">158 ft (vs 102 ft at limit)</span>
+              <span id="stoppingDistLabel" class="font-bold text-amber-400">216 ft (vs 148 ft at limit)</span>
             </div>
           </div>
         </div>
@@ -177,25 +177,25 @@
             0m 42s
           </div>
           <div id="timeSubMultiplier" class="text-sm font-medium text-blue-400 mt-1">
-            Theoretical free-flow: 2m 05s
+            Uninterrupted free-flow: 1m 39s saved
           </div>
         </div>
 
         <div class="mt-5 pt-4 border-t border-slate-800 space-y-2 text-xs">
           <div class="flex justify-between">
             <span class="text-slate-400">Trip Time at Speed Limit:</span>
-            <span id="timeAtLimitVal" class="font-mono text-slate-200">12m 10s</span>
+            <span id="timeAtLimitVal" class="font-mono text-slate-200">10m 22s</span>
           </div>
           <div class="flex justify-between">
             <span class="text-slate-400">Trip Time at Your Speed:</span>
-            <span id="timeAtActualVal" class="font-mono text-slate-200">11m 28s</span>
+            <span id="timeAtActualVal" class="font-mono text-slate-200">9m 40s</span>
           </div>
           <div class="flex justify-between text-amber-400">
             <span>Eaten by Red Lights / Green Wave:</span>
-            <span id="timeEatenVal" class="font-mono font-semibold">1m 23s lost</span>
+            <span id="timeEatenVal" class="font-mono font-semibold">0m 57s clawed back</span>
           </div>
           <p id="timeEverydayContext" class="text-[11px] text-slate-400 italic pt-1">
-            Less than the length of a single radio commercial.
+            Roughly the time it takes to tie your shoes.
           </p>
         </div>
       </div>
@@ -209,25 +209,25 @@
           </div>
           <!-- Absolute Risk Headline -->
           <div class="flex items-baseline gap-2 mt-3">
-            <span id="pedHeadline" class="text-4xl font-extrabold text-rose-400 tracking-tight">54.2%</span>
-            <span class="text-xs text-slate-400">death probability if struck</span>
+            <span id="pedHeadline" class="text-4xl font-extrabold text-rose-400 tracking-tight">64.2%</span>
+            <span id="pedHeadlineUnit" class="text-xs text-slate-400">death probability if struck</span>
           </div>
           <!-- Multiplier Underneath -->
           <div id="pedMultiplierSub" class="text-sm font-bold text-rose-300 mt-1">
-            2.41x more lethal than speed limit (22.5%)
+            1.73x more lethal than speed limit (37.0%)
           </div>
         </div>
 
         <div class="mt-5 pt-4 border-t border-slate-800 space-y-2 text-xs">
           <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-            <div id="pedBar" class="bg-rose-500 h-full transition-all duration-300" style="width: 54%"></div>
+            <div id="pedBar" class="bg-rose-500 h-full transition-all duration-300" style="width: 64%"></div>
           </div>
           <div class="flex justify-between text-[11px] text-slate-400">
-            <span>At Limit: <strong id="pedBaseVal" class="text-slate-200">22.5%</strong></span>
-            <span>At Your Speed: <strong id="pedActualVal" class="text-slate-200">54.2%</strong></span>
+            <span>At Limit: <strong id="pedBaseVal" class="text-slate-200">37.0%</strong></span>
+            <span>At Your Speed: <strong id="pedActualVal" class="text-slate-200">64.2%</strong></span>
           </div>
           <p id="pedContextNote" class="text-[11px] text-slate-400 pt-1">
-            Based on Tefft (2011) logistic S-curve for unbraked impact speed.
+            Based on Tefft (2011) logistic S-curve on pedestrian-accessible streets.
           </p>
         </div>
       </div>
@@ -241,25 +241,25 @@
           </div>
           <!-- Absolute Risk Headline -->
           <div class="flex items-baseline gap-2 mt-3">
-            <span id="driverHeadline" class="text-4xl font-extrabold text-amber-400 tracking-tight">1.33%</span>
+            <span id="driverHeadline" class="text-4xl font-extrabold text-amber-400 tracking-tight">1.29%</span>
             <span class="text-xs text-slate-400">severe crash fatality rate</span>
           </div>
           <!-- Multiplier Underneath -->
           <div id="driverMultiplierSub" class="text-sm font-bold text-amber-300 mt-1">
-            2.66x fatal crash multiplier vs. limit (0.50%)
+            2.58x fatal crash multiplier vs. limit (0.50%)
           </div>
         </div>
 
         <div class="mt-5 pt-4 border-t border-slate-800 space-y-2 text-xs">
           <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-            <div id="driverBar" class="bg-amber-500 h-full transition-all duration-300" style="width: 45%"></div>
+            <div id="driverBar" class="bg-amber-500 h-full transition-all duration-300" style="width: 26%"></div>
           </div>
           <div class="flex justify-between text-[11px] text-slate-400">
             <span>Baseline Crash Lethality: <strong id="driverBaseVal" class="text-slate-200">0.50%</strong></span>
-            <span>At Your Speed: <strong id="driverActualVal" class="text-slate-200">1.33%</strong></span>
+            <span>At Your Speed: <strong id="driverActualVal" class="text-slate-200">1.29%</strong></span>
           </div>
           <p class="text-[11px] text-slate-400 pt-1">
-            Kinetic energy scales with $v^2$; fatal crash frequency scales with $(v_{\text{actual}} / v_{\text{limit}})^4$.
+            Kinetic energy scales with v<sup>2</sup>; fatal crash frequency scales with (v<sub>actual</sub> / v<sub>limit</sub>)<sup>4</sup>.
           </p>
         </div>
       </div>
@@ -272,29 +272,51 @@
     // 1. ENGINEERING & STATISTICAL MODELS
     // ============================================================================
     const OSM_SIGNAL_PROFILES = {
-      motorway:    { C: 0,   g_C: 1.0,  X: 0.0,  coordFactor: 0.0,  defaultSignalsPerMile: 0.0 },
-      trunk:       { C: 130, g_C: 0.55, X: 0.70, coordFactor: 0.80, defaultSignalsPerMile: 0.8 },
-      primary:     { C: 120, g_C: 0.50, X: 0.65, coordFactor: 0.75, defaultSignalsPerMile: 2.0 },
-      secondary:   { C: 90,  g_C: 0.48, X: 0.60, coordFactor: 0.50, defaultSignalsPerMile: 2.5 },
-      tertiary:    { C: 70,  g_C: 0.45, X: 0.50, coordFactor: 0.20, defaultSignalsPerMile: 3.0 },
-      residential: { C: 60,  g_C: 0.45, X: 0.35, coordFactor: 0.0,  defaultSignalsPerMile: 1.5 }
+      motorway:    { label: "Controlled-Access Freeway (No Signals)", C: 0,   g_C: 1.0,  X: 0.0,  coordFactor: 0.0,  defaultSignalsPerMile: 0.0, defaultSpeedMph: 65 },
+      trunk:       { label: "Major Divided Highway (130s cycle)",     C: 130, g_C: 0.55, X: 0.70, coordFactor: 0.80, defaultSignalsPerMile: 0.8, defaultSpeedMph: 55 },
+      primary:     { label: "Primary Arterial (120s cycle)",          C: 120, g_C: 0.50, X: 0.65, coordFactor: 0.75, defaultSignalsPerMile: 2.0, defaultSpeedMph: 45 },
+      secondary:   { label: "Secondary Collector (90s cycle)",        C: 90,  g_C: 0.48, X: 0.60, coordFactor: 0.55, defaultSignalsPerMile: 2.5, defaultSpeedMph: 35 },
+      tertiary:    { label: "Tertiary / Downtown Grid (70s cycle)",   C: 70,  g_C: 0.45, X: 0.50, coordFactor: 0.30, defaultSignalsPerMile: 3.0, defaultSpeedMph: 30 },
+      residential: { label: "Residential Local (60s cycle)",          C: 60,  g_C: 0.45, X: 0.35, coordFactor: 0.15, defaultSignalsPerMile: 1.5, defaultSpeedMph: 25 }
     };
+
+    const DEFAULT_PRESET_SEGMENTS = [
+      { highwayType: 'residential', distanceMiles: 0.8, speedLimitMph: 25 },
+      { highwayType: 'secondary',   distanceMiles: 1.7, speedLimitMph: 35 },
+      { highwayType: 'primary',     distanceMiles: 2.5, speedLimitMph: 45 }
+    ];
 
     function calculateHCMUniformDelay(C, g_C, X) {
       if (C <= 0 || g_C >= 1.0) return 0;
       return (0.5 * C * Math.pow(1 - g_C, 2)) / (1 - Math.min(1.0, X) * g_C);
     }
 
-    // AAA Foundation (Tefft, 2011) Pedestrian Fatality Logistic Curve
     function getPedestrianFatalityProb(speedMph) {
       return 1 / (1 + Math.exp(4.614 - 0.10986 * speedMph));
     }
 
-    // Stopping distance (ft): 1.5s perception-reaction time + braking on dry asphalt (f = 0.7)
     function getStoppingDistanceFt(speedMph) {
       const reactionFt = 1.467 * speedMph * 1.5;
       const brakingFt = Math.pow(speedMph, 2) / (30 * 0.7);
       return Math.round(reactionFt + brakingFt);
+    }
+
+    function getEverydayContext(savedSeconds, speedDelta) {
+      if (Math.abs(speedDelta) < 0.1) {
+        return "Traveling at the posted speed limit — baseline travel time and safety.";
+      }
+      const absSec = Math.abs(savedSeconds);
+      if (speedDelta < 0) {
+        if (absSec < 60) return "Costs less than a minute for a dramatic drop in stopping distance and crash lethality.";
+        if (absSec < 180) return "Roughly the length of one pop song invested in safer reaction margins.";
+        return "A few extra minutes on the road in exchange for exponentially lower kinetic energy.";
+      }
+      if (savedSeconds <= 5) return "Virtually zero real-world gain — red lights and queue stops erased your speeding advantage.";
+      if (absSec < 45) return "Roughly the time it takes to tie your shoes.";
+      if (absSec < 90) return "Less than the length of a single radio commercial or one red light.";
+      if (absSec < 210) return "Less than the length of a single pop song.";
+      if (absSec < 360) return "Roughly the time it takes to brew a cup of coffee.";
+      return "Noticeable time savings — typically only achievable on uninterrupted freeways.";
     }
 
     function evaluateSegmentWithSignals(segment, speedOffsetMph, minSpeedMph = 10) {
@@ -302,9 +324,10 @@
       const limitSpeed = Math.max(minSpeedMph, segment.speedLimitMph);
       const actualSpeed = Math.max(minSpeedMph, limitSpeed + speedOffsetMph);
 
+      // Keep fractional signals per segment so short OSM edges don't round to 0
       const signals = typeof segment.signalCount === "number"
         ? segment.signalCount
-        : Math.round(segment.distanceMiles * profile.defaultSignalsPerMile);
+        : segment.distanceMiles * profile.defaultSignalsPerMile;
 
       const freeFlowLimitSec = (segment.distanceMiles / limitSpeed) * 3600;
       const freeFlowActualSec = (segment.distanceMiles / actualSpeed) * 3600;
@@ -319,12 +342,30 @@
         delayAtLimitSec = signals * baseDelay * greenWaveDiscount;
         delayAtActualSec = delayAtLimitSec;
 
-        const STARTUP_LOST_TIME_SEC = 4.5;
+        const baseStopLossSec = 4.5 + Math.max(0, (actualSpeed - limitSpeed) * 0.18);
+        const redPhaseProb = 1 - profile.g_C;
+
         if (actualSpeed > limitSpeed) {
-          const maxRedWaitSec = signals * profile.C * (1 - profile.g_C);
-          const clawback = Math.min(maxRedWaitSec, theoreticalSavedSec * profile.coordFactor);
-          const stopPenalty = signals * profile.coordFactor * STARTUP_LOST_TIME_SEC * Math.min(1, (actualSpeed - limitSpeed) / 15);
-          delayAtActualSec = delayAtLimitSec + clawback + stopPenalty;
+          const speedExcessRatio = Math.min(1, (actualSpeed - limitSpeed) / 15);
+          const maxRedWaitSec = signals * profile.C * redPhaseProb;
+
+          // 1. Coordinated Green Wave clawback
+          const coordinatedClawback = Math.min(
+            maxRedWaitSec,
+            theoreticalSavedSec * profile.coordFactor
+          );
+
+          // 2. Uncoordinated queue catch-up + kinetic braking/startup loss
+          const uncoordCatchup = Math.min(
+            maxRedWaitSec * 0.5,
+            theoreticalSavedSec * (1 - profile.coordFactor) * redPhaseProb * 0.65
+          );
+          const extraStopLoss = signals * redPhaseProb * baseStopLossSec * speedExcessRatio;
+
+          // Cap total signal penalty at theoreticalSavedSec so normal speeding doesn't invert trip time,
+          // or allow slight startup loss cap
+          const totalPenalty = Math.min(theoreticalSavedSec, coordinatedClawback + uncoordCatchup + extraStopLoss);
+          delayAtActualSec = delayAtLimitSec + totalPenalty;
         } else if (actualSpeed < limitSpeed) {
           const deficitRatio = Math.min(1, (limitSpeed - actualSpeed) / 15);
           const lostSyncPenalty = signals * baseDelay * (1 - greenWaveDiscount) * deficitRatio;
@@ -336,12 +377,12 @@
       const totalActualSec = freeFlowActualSec + delayAtActualSec;
       const realWorldSavedSec = totalLimitSec - totalActualSec;
 
-      // Safety Metrics for this segment
       const pedProbLimit = getPedestrianFatalityProb(limitSpeed);
       const pedProbActual = getPedestrianFatalityProb(actualSpeed);
       const driverMultiplier = Math.pow(actualSpeed / limitSpeed, 4);
 
       return {
+        highwayType: segment.highwayType,
         distanceMiles: segment.distanceMiles,
         limitSpeed,
         actualSpeed,
@@ -361,44 +402,48 @@
     // 2. APPLICATION STATE & LEAFLET MAP ROUTING (VALHALLA OSM API)
     // ============================================================================
     let currentMode = 'map';
-    // Default Preset Route Segments (e.g., 5-mile urban/suburban commute)
-    let activeMapSegments = [
-      { highwayType: 'residential', distanceMiles: 0.8, speedLimitMph: 25 },
-      { highwayType: 'secondary',   distanceMiles: 1.7, speedLimitMph: 35 },
-      { highwayType: 'primary',     distanceMiles: 2.5, speedLimitMph: 45 }
-    ];
-
+    let activeMapSegments = [...DEFAULT_PRESET_SEGMENTS];
     let map, markers = [], routeLine = null;
+    let routeAbortController = null;
 
     function initMap() {
-      map = L.map('map').setView([33.8358, -118.3406], 12); // Default centered in South Bay / LA
+      map = L.map('map').setView([33.8358, -118.3406], 12);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
       map.on('click', async (e) => {
-        if (markers.length >= 2) clearRoute();
+        if (markers.length >= 2) clearRoute(false);
         const marker = L.marker(e.latlng).addTo(map);
         markers.push(marker);
 
         if (markers.length === 1) {
-          document.getElementById('mapStatus').textContent = "Start Point set. Click a second point to fetch OSM route & speed limits...";
+          document.getElementById('mapStatus').textContent = "Start Point set. Click a second point on the map for Destination...";
         } else if (markers.length === 2) {
           await fetchValhallaRoute(markers[0].getLatLng(), markers[1].getLatLng());
         }
       });
     }
 
-    function clearRoute() {
+    function clearRoute(resetToPreset = true) {
+      if (routeAbortController) {
+        routeAbortController.abort();
+        routeAbortController = null;
+      }
       markers.forEach(m => map.removeLayer(m));
       markers = [];
       if (routeLine) map.removeLayer(routeLine);
       routeLine = null;
-      document.getElementById('mapStatus').textContent = "Click on the map to set Start Point (A), then Destination (B).";
+
+      if (resetToPreset) {
+        activeMapSegments = [...DEFAULT_PRESET_SEGMENTS];
+        document.getElementById('mapStatus').textContent =
+          "Reset to 5.0 mi preset route. Click any two points on the map for a live OSM route.";
+        recalculate();
+      }
     }
 
-    // Decode Valhalla's precision-6 polyline geometry
     function decodePolyline6(str) {
       let index = 0, lat = 0, lng = 0, coordinates = [], shift = 0, result = 0, byte = null;
       while (index < str.length) {
@@ -413,11 +458,25 @@
       return coordinates;
     }
 
+    function mapValhallaRoadClass(roadClass) {
+      const rc = (roadClass || '').toLowerCase();
+      if (rc === 'motorway') return 'motorway';
+      if (rc === 'trunk') return 'trunk';
+      if (rc === 'primary') return 'primary';
+      if (rc === 'secondary') return 'secondary';
+      if (rc === 'tertiary' || rc === 'unclassified') return 'tertiary';
+      return 'residential';
+    }
+
     async function fetchValhallaRoute(start, end) {
+      if (routeAbortController) routeAbortController.abort();
+      routeAbortController = new AbortController();
+      const { signal } = routeAbortController;
+
       const statusEl = document.getElementById('mapStatus');
       statusEl.textContent = "Querying OpenStreetMap Valhalla router for road classes & speed limits...";
 
-      const payload = {
+      const routePayload = {
         locations: [
           { lat: start.lat, lon: start.lng },
           { lat: end.lat, lon: end.lng }
@@ -427,8 +486,13 @@
       };
 
       try {
-        const url = `https://valhalla1.openstreetmap.de/route?json=${encodeURIComponent(JSON.stringify(payload))}`;
-        const res = await fetch(url);
+        // Use POST to avoid HTTP 414 URI Too Long on long polylines
+        const res = await fetch("https://valhalla1.openstreetmap.de/route", {
+          method: "POST",
+          body: JSON.stringify(routePayload),
+          signal
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
         if (!data.trip || !data.trip.legs || !data.trip.legs[0]) throw new Error("No route found");
@@ -439,38 +503,112 @@
         routeLine = L.polyline(coords, { color: '#3b82f6', weight: 5 }).addTo(map);
         map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
 
-        // Extract segments from Valhalla maneuvers
-        const extracted = [];
-        for (const m of leg.maneuvers) {
-          if (m.length <= 0) continue;
-          // Infer road class & default speed limit from maneuver attributes
-          let hType = 'secondary';
-          let estSpeed = 35;
-          const timeHours = m.time / 3600;
-          const impliedMph = timeHours > 0 ? (m.length / timeHours) : 35;
-
-          if (m.travel_type === 'tractor_trailer' || impliedMph > 55) {
-            hType = 'motorway'; estSpeed = 65;
-          } else if (impliedMph > 42) {
-            hType = 'primary'; estSpeed = 45;
-          } else if (impliedMph > 30) {
-            hType = 'secondary'; estSpeed = 35;
-          } else {
-            hType = 'residential'; estSpeed = 25;
+        // Query Valhalla trace_attributes with units: "miles" so edge.length is miles and edge.speed_limit is mph
+        const tracePayload = {
+          encoded_polyline: leg.shape,
+          costing: "auto",
+          shape_match: "edge_walk",
+          units: "miles",
+          directions_options: { units: "miles" },
+          filters: {
+            attributes: [
+              "edge.road_class",
+              "edge.length",
+              "edge.speed_limit",
+              "edge.speed",
+              "node.traffic_signal"
+            ],
+            action: "include"
           }
+        };
 
-          extracted.push({
-            highwayType: hType,
-            distanceMiles: m.length,
-            speedLimitMph: estSpeed
+        let extracted = [];
+        try {
+          const traceRes = await fetch("https://valhalla1.openstreetmap.de/trace_attributes", {
+            method: "POST",
+            body: JSON.stringify(tracePayload),
+            signal
           });
+          if (traceRes.ok) {
+            const traceData = await traceRes.json();
+            if (traceData.edges && traceData.edges.length > 0) {
+              // First pass: deduplicate consecutive traffic_signal nodes within 0.07 miles (complex intersections)
+              let milesSinceLastSignal = 999;
+              let explicitSignalsTotal = 0;
+
+              const rawEdges = traceData.edges.map(edge => {
+                const hType = mapValhallaRoadClass(edge.road_class);
+                const distMiles = edge.length || 0; // Already in miles due to units: "miles"
+                milesSinceLastSignal += distMiles;
+
+                let limitMph = OSM_SIGNAL_PROFILES[hType].defaultSpeedMph;
+                if (edge.speed_limit && edge.speed_limit > 0 && edge.speed_limit <= 85) {
+                  limitMph = Math.round(edge.speed_limit / 5) * 5;
+                }
+
+                let isUniqueSignal = 0;
+                if (hType !== 'motorway' && edge.end_node && edge.end_node.traffic_signal && milesSinceLastSignal >= 0.07) {
+                  isUniqueSignal = 1;
+                  milesSinceLastSignal = 0;
+                  explicitSignalsTotal += 1;
+                }
+
+                return {
+                  highwayType: hType,
+                  distanceMiles: distMiles,
+                  speedLimitMph: Math.max(15, limitMph),
+                  explicitSignal: isUniqueSignal
+                };
+              }).filter(s => s.distanceMiles > 0);
+
+              // If OSM has mapped signals on this route, use them (blended lightly with profile density for unmapped gaps);
+              // otherwise use profile heuristic density
+              const totalRouteMiles = leg.summary.length || 1;
+              const osmSignalDensity = explicitSignalsTotal / totalRouteMiles;
+
+              extracted = rawEdges.map(e => ({
+                highwayType: e.highwayType,
+                distanceMiles: e.distanceMiles,
+                speedLimitMph: e.speedLimitMph,
+                signalCount: osmSignalDensity >= 0.4
+                  ? e.explicitSignal
+                  : e.explicitSignal + (e.distanceMiles * OSM_SIGNAL_PROFILES[e.highwayType].defaultSignalsPerMile * 0.5)
+              }));
+            }
+          }
+        } catch (traceErr) {
+          if (traceErr.name === 'AbortError') throw traceErr;
+          console.warn("trace_attributes fallback to maneuver heuristics:", traceErr);
+        }
+
+        // Fallback if trace_attributes didn't return edges
+        if (extracted.length === 0) {
+          for (const m of leg.maneuvers) {
+            if (m.length <= 0) continue;
+            const timeHours = m.time / 3600;
+            const estFreeFlowMph = timeHours > 0 ? (m.length / timeHours) * 1.35 : 35;
+
+            let hType = 'secondary', estSpeed = 35;
+            if (estFreeFlowMph > 55) { hType = 'motorway'; estSpeed = 65; }
+            else if (estFreeFlowMph > 40) { hType = 'primary'; estSpeed = 45; }
+            else if (estFreeFlowMph > 30) { hType = 'secondary'; estSpeed = 35; }
+            else if (estFreeFlowMph > 24) { hType = 'tertiary'; estSpeed = 30; }
+            else { hType = 'residential'; estSpeed = 25; }
+
+            extracted.push({
+              highwayType: hType,
+              distanceMiles: m.length,
+              speedLimitMph: estSpeed
+            });
+          }
         }
 
         if (extracted.length > 0) activeMapSegments = extracted;
-        statusEl.textContent = `Loaded ${leg.summary.length.toFixed(1)} mi route across ${extracted.length} OSM maneuvers.`;
+        statusEl.textContent = `Loaded ${leg.summary.length.toFixed(1)} mi route across ${extracted.length} OSM road segments.`;
         recalculate();
       } catch (err) {
-        statusEl.textContent = "Valhalla routing failed or rate-limited. Using preset commute segments.";
+        if (err.name === 'AbortError') return;
+        statusEl.textContent = "Valhalla routing failed or rate-limited. Showing preset commute segments.";
         console.error(err);
       }
     }
@@ -494,6 +632,17 @@
       recalculate();
     }
 
+    function onManualRoadClassChange() {
+      const hType = document.getElementById('manualHighwayType').value;
+      const profile = OSM_SIGNAL_PROFILES[hType];
+      const dist = parseFloat(document.getElementById('manualDist').value);
+
+      document.getElementById('manualRoadLabel').textContent = profile.label;
+      document.getElementById('manualLimit').value = profile.defaultSpeedMph;
+      document.getElementById('manualSignals').value = Math.min(50, Math.round(dist * profile.defaultSignalsPerMile));
+      recalculate();
+    }
+
     function setOffset(val) {
       document.getElementById('speedOffset').value = val;
       recalculate();
@@ -509,7 +658,6 @@
     function recalculate() {
       const offset = parseFloat(document.getElementById('speedOffset').value);
 
-      // Build segment list based on active mode
       let segments = [];
       if (currentMode === 'manual') {
         const hType = document.getElementById('manualHighwayType').value;
@@ -517,6 +665,7 @@
         const limit = parseFloat(document.getElementById('manualLimit').value);
         const signals = parseInt(document.getElementById('manualSignals').value, 10);
 
+        document.getElementById('manualRoadLabel').textContent = OSM_SIGNAL_PROFILES[hType].label;
         document.getElementById('manualDistVal').textContent = `${dist} miles`;
         document.getElementById('manualLimitVal').textContent = `${limit} mph`;
         document.getElementById('manualSignalsVal').textContent = `${signals} signals`;
@@ -526,8 +675,7 @@
         segments = activeMapSegments;
       }
 
-      // Evaluate across all segments (distance-weighted averages for risk)
-      let totalDist = 0, totalSignals = 0;
+      let totalDist = 0, pedAccessibleDist = 0, totalSignals = 0;
       let sumLimitSec = 0, sumActualSec = 0, sumTheoSavedSec = 0, sumRealSavedSec = 0, sumEatenSec = 0;
       let weightedLimitSpeed = 0, weightedActualSpeed = 0;
       let weightedPedLimit = 0, weightedPedActual = 0, weightedDriverMult = 0;
@@ -544,25 +692,29 @@
 
         weightedLimitSpeed += res.limitSpeed * res.distanceMiles;
         weightedActualSpeed += res.actualSpeed * res.distanceMiles;
-        weightedPedLimit += res.pedProbLimit * res.distanceMiles;
-        weightedPedActual += res.pedProbActual * res.distanceMiles;
         weightedDriverMult += res.driverMultiplier * res.distanceMiles;
+
+        // Only accumulate pedestrian risk on surface streets (exclude controlled-access motorways)
+        if (res.highwayType !== 'motorway') {
+          pedAccessibleDist += res.distanceMiles;
+          weightedPedLimit += res.pedProbLimit * res.distanceMiles;
+          weightedPedActual += res.pedProbActual * res.distanceMiles;
+        }
       });
 
+      const roundedSignals = Math.round(totalSignals);
       const avgLimit = totalDist > 0 ? weightedLimitSpeed / totalDist : 35;
       const avgActual = totalDist > 0 ? weightedActualSpeed / totalDist : 35;
-      const pedLimitPct = (weightedPedLimit / totalDist) * 100;
-      const pedActualPct = (weightedPedActual / totalDist) * 100;
-      const pedMult = pedLimitPct > 0 ? (pedActualPct / pedLimitPct) : 1;
+      const effectiveSpeedDelta = avgActual - avgLimit;
 
       const driverMult = totalDist > 0 ? (weightedDriverMult / totalDist) : 1;
-      const BASE_DRIVER_FATAL_PCT = 0.50; // 0.50% baseline severe crash lethality
+      const BASE_DRIVER_FATAL_PCT = 0.50;
       const driverActualPct = Math.min(100, BASE_DRIVER_FATAL_PCT * driverMult);
 
       // Update Map Summary Bar
       document.getElementById('mapDistLabel').textContent = `${totalDist.toFixed(1)} miles`;
       document.getElementById('mapAvgLimitLabel').textContent = `${Math.round(avgLimit)} mph`;
-      document.getElementById('mapSignalsLabel').textContent = `${totalSignals} lights`;
+      document.getElementById('mapSignalsLabel').textContent = `${roundedSignals} lights`;
 
       // Update Offset Header & Stopping Distance
       const badge = document.getElementById('offsetBadge');
@@ -582,15 +734,16 @@
       document.getElementById('stoppingDistLabel').textContent =
         `${getStoppingDistanceFt(avgActual)} ft (vs ${getStoppingDistanceFt(avgLimit)} ft at limit)`;
 
-      // Update Card 1: Time Saved / Added
+      // Update Card 1: Time Saved / Cost (Driven by effectiveSpeedDelta to avoid sign inversion)
       const timeTitle = document.getElementById('timeCardTitle');
       const timeHead = document.getElementById('timeHeadline');
-      if (sumRealSavedSec >= 0) {
+      if (effectiveSpeedDelta >= 0) {
+        const netSaved = Math.max(0, sumRealSavedSec);
         timeTitle.textContent = "Signal-Adjusted Time Saved";
-        timeHead.textContent = formatDuration(sumRealSavedSec);
+        timeHead.textContent = formatDuration(netSaved);
         timeHead.className = "text-4xl font-extrabold text-white mt-3 tracking-tight";
         document.getElementById('timeSubMultiplier').textContent =
-          `Uninterrupted free-flow: ${formatDuration(sumTheoSavedSec)} saved`;
+          `Uninterrupted free-flow: ${formatDuration(Math.max(0, sumTheoSavedSec))} saved`;
       } else {
         timeTitle.textContent = "Extra Travel Time Invested";
         timeHead.textContent = `+${formatDuration(sumRealSavedSec)}`;
@@ -602,32 +755,53 @@
       document.getElementById('timeAtLimitVal').textContent = formatDuration(sumLimitSec);
       document.getElementById('timeAtActualVal').textContent = formatDuration(sumActualSec);
       document.getElementById('timeEatenVal').textContent =
-        offset > 0 ? `${formatDuration(sumEatenSec)} clawed back` : `0m 00s`;
+        effectiveSpeedDelta > 0.1 ? `${formatDuration(sumEatenSec)} clawed back` : `0m 00s`;
+      document.getElementById('timeEverydayContext').textContent =
+        getEverydayContext(sumRealSavedSec, effectiveSpeedDelta);
 
-      // Update Card 2: Pedestrian Absolute Risk (Headline) & Multiplier (Sub)
+      // Update Card 2: Pedestrian Absolute Risk & Multiplier
       const pedHead = document.getElementById('pedHeadline');
+      const pedUnit = document.getElementById('pedHeadlineUnit');
       const pedSub = document.getElementById('pedMultiplierSub');
-      pedHead.textContent = `${pedActualPct.toFixed(1)}%`;
-      document.getElementById('pedBaseVal').textContent = `${pedLimitPct.toFixed(1)}%`;
-      document.getElementById('pedActualVal').textContent = `${pedActualPct.toFixed(1)}%`;
-      document.getElementById('pedBar').style.width = `${Math.min(100, pedActualPct)}%`;
 
-      if (offset > 0) {
-        pedHead.className = "text-4xl font-extrabold text-rose-400 tracking-tight";
-        pedSub.className = "text-sm font-bold text-rose-300 mt-1";
-        pedSub.textContent = `${pedMult.toFixed(2)}x more lethal than speed limit (${pedLimitPct.toFixed(1)}%)`;
-      } else if (offset < 0) {
-        const reductionPct = ((pedLimitPct - pedActualPct) / pedLimitPct) * 100;
-        pedHead.className = "text-4xl font-extrabold text-emerald-400 tracking-tight";
-        pedSub.className = "text-sm font-bold text-emerald-300 mt-1";
-        pedSub.textContent = `${pedMult.toFixed(2)}x multiplier (${reductionPct.toFixed(0)}% lower fatality risk vs. limit)`;
+      if (pedAccessibleDist <= 0.001) {
+        // 100% Controlled-Access Freeway
+        pedHead.textContent = "N/A";
+        pedHead.className = "text-4xl font-extrabold text-slate-400 tracking-tight";
+        pedUnit.textContent = "controlled-access freeway";
+        pedSub.className = "text-sm font-medium text-slate-400 mt-1";
+        pedSub.textContent = "Pedestrians restricted on grade-separated motorways";
+        document.getElementById('pedBaseVal').textContent = "N/A";
+        document.getElementById('pedActualVal').textContent = "N/A";
+        document.getElementById('pedBar').style.width = "0%";
       } else {
-        pedHead.className = "text-4xl font-extrabold text-slate-200 tracking-tight";
-        pedSub.className = "text-sm font-bold text-slate-400 mt-1";
-        pedSub.textContent = `1.00x baseline risk at posted speed limit`;
+        const pedLimitPct = (weightedPedLimit / pedAccessibleDist) * 100;
+        const pedActualPct = (weightedPedActual / pedAccessibleDist) * 100;
+        const pedMult = pedLimitPct > 0 ? (pedActualPct / pedLimitPct) : 1;
+
+        pedUnit.textContent = "death probability if struck";
+        pedHead.textContent = `${pedActualPct.toFixed(1)}%`;
+        document.getElementById('pedBaseVal').textContent = `${pedLimitPct.toFixed(1)}%`;
+        document.getElementById('pedActualVal').textContent = `${pedActualPct.toFixed(1)}%`;
+        document.getElementById('pedBar').style.width = `${Math.min(100, pedActualPct)}%`;
+
+        if (effectiveSpeedDelta > 0.1) {
+          pedHead.className = "text-4xl font-extrabold text-rose-400 tracking-tight";
+          pedSub.className = "text-sm font-bold text-rose-300 mt-1";
+          pedSub.textContent = `${pedMult.toFixed(2)}x more lethal than speed limit (${pedLimitPct.toFixed(1)}%)`;
+        } else if (effectiveSpeedDelta < -0.1) {
+          const reductionPct = ((pedLimitPct - pedActualPct) / pedLimitPct) * 100;
+          pedHead.className = "text-4xl font-extrabold text-emerald-400 tracking-tight";
+          pedSub.className = "text-sm font-bold text-emerald-300 mt-1";
+          pedSub.textContent = `${pedMult.toFixed(2)}x multiplier (${reductionPct.toFixed(0)}% lower fatality risk vs. limit)`;
+        } else {
+          pedHead.className = "text-4xl font-extrabold text-slate-200 tracking-tight";
+          pedSub.className = "text-sm font-bold text-slate-400 mt-1";
+          pedSub.textContent = `1.00x baseline risk at posted speed limit`;
+        }
       }
 
-      // Update Card 3: Driver Absolute Risk (Headline) & Multiplier (Sub)
+      // Update Card 3: Driver Absolute Risk & Multiplier
       const drvHead = document.getElementById('driverHeadline');
       const drvSub = document.getElementById('driverMultiplierSub');
       drvHead.textContent = `${driverActualPct.toFixed(2)}%`;
@@ -635,12 +809,12 @@
       document.getElementById('driverActualVal').textContent = `${driverActualPct.toFixed(2)}%`;
       document.getElementById('driverBar').style.width = `${Math.min(100, driverActualPct * 20)}%`;
 
-      if (offset > 0) {
+      if (effectiveSpeedDelta > 0.1) {
         drvHead.className = "text-4xl font-extrabold text-amber-400 tracking-tight";
         drvSub.className = "text-sm font-bold text-amber-300 mt-1";
         drvSub.textContent = `${driverMult.toFixed(2)}x fatal crash multiplier vs. limit (${BASE_DRIVER_FATAL_PCT.toFixed(2)}%)`;
-      } else if (offset < 0) {
-        const drvReduction = (1 - driverMult) * 100;
+      } else if (effectiveSpeedDelta < -0.1) {
+        const drvReduction = Math.max(0, (1 - driverMult) * 100);
         drvHead.className = "text-4xl font-extrabold text-emerald-400 tracking-tight";
         drvSub.className = "text-sm font-bold text-emerald-300 mt-1";
         drvSub.textContent = `${driverMult.toFixed(2)}x multiplier (${drvReduction.toFixed(0)}% lower fatal crash risk)`;
@@ -657,4 +831,4 @@
     });
   </script>
 </body>
-</html> 
+</html>
