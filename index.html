@@ -237,7 +237,7 @@
         <div>
           <div class="flex items-center justify-between text-xs text-slate-400 uppercase tracking-wider font-semibold">
             <span>Driver Fatal Crash Risk</span>
-            <a href="https://road-safety.transport.ec.europa.eu/eu-road-safety-policy/priorities/safe-road-use/safe-speed/archive/speed-and-accident-risk/power-model_en" target="_blank" rel="noopener noreferrer" class="hover:text-slate-200 underline">🚗 Nilsson Power Model</a>
+            <a href="https://en.wikipedia.org/wiki/Speed_limit#Safety_effects" target="_blank" rel="noopener noreferrer" class="hover:text-slate-200 underline">🚗 Nilsson Power Model</a>
           </div>
           <!-- Absolute Risk Headline -->
           <div class="flex items-baseline gap-2 mt-3">
@@ -324,7 +324,6 @@
       const limitSpeed = Math.max(minSpeedMph, segment.speedLimitMph);
       const actualSpeed = Math.max(minSpeedMph, limitSpeed + speedOffsetMph);
 
-      // Keep fractional signals per segment so short OSM edges don't round to 0
       const signals = typeof segment.signalCount === "number"
         ? segment.signalCount
         : segment.distanceMiles * profile.defaultSignalsPerMile;
@@ -349,20 +348,17 @@
           const speedExcessRatio = Math.min(1, (actualSpeed - limitSpeed) / 15);
           const maxRedWaitSec = signals * profile.C * redPhaseProb;
 
-          // 1. Coordinated Green Wave clawback
           const coordinatedClawback = Math.min(
             maxRedWaitSec,
             theoreticalSavedSec * profile.coordFactor
           );
 
-          // 2. Uncoordinated queue catch-up + kinetic braking/startup loss
           const uncoordCatchup = Math.min(
             maxRedWaitSec * 0.5,
             theoreticalSavedSec * (1 - profile.coordFactor) * redPhaseProb * 0.65
           );
           const extraStopLoss = signals * redPhaseProb * baseStopLossSec * speedExcessRatio;
 
-          // Cap total signal penalty at theoreticalSavedSec so normal speeding doesn't invert trip time
           const totalPenalty = Math.min(theoreticalSavedSec, coordinatedClawback + uncoordCatchup + extraStopLoss);
           delayAtActualSec = delayAtLimitSec + totalPenalty;
         } else if (actualSpeed < limitSpeed) {
@@ -485,7 +481,6 @@
       };
 
       try {
-        // Use POST to avoid HTTP 414 URI Too Long on long polylines
         const res = await fetch("https://valhalla1.openstreetmap.de/route", {
           method: "POST",
           body: JSON.stringify(routePayload),
@@ -502,7 +497,6 @@
         routeLine = L.polyline(coords, { color: '#3b82f6', weight: 5 }).addTo(map);
         map.fitBounds(routeLine.getBounds(), { padding: [30, 30] });
 
-        // Query Valhalla trace_attributes with units: "miles" so edge.length is miles and edge.speed_limit is mph
         const tracePayload = {
           encoded_polyline: leg.shape,
           costing: "auto",
@@ -531,13 +525,12 @@
           if (traceRes.ok) {
             const traceData = await traceRes.json();
             if (traceData.edges && traceData.edges.length > 0) {
-              // First pass: deduplicate consecutive traffic_signal nodes within 0.07 miles (complex intersections)
               let milesSinceLastSignal = 999;
               let explicitSignalsTotal = 0;
 
               const rawEdges = traceData.edges.map(edge => {
                 const hType = mapValhallaRoadClass(edge.road_class);
-                const distMiles = edge.length || 0; // Already in miles due to units: "miles"
+                const distMiles = edge.length || 0;
                 milesSinceLastSignal += distMiles;
 
                 let limitMph = OSM_SIGNAL_PROFILES[hType].defaultSpeedMph;
@@ -560,8 +553,6 @@
                 };
               }).filter(s => s.distanceMiles > 0);
 
-              // If OSM has mapped signals on this route, use them (blended lightly with profile density for unmapped gaps);
-              // otherwise use profile heuristic density
               const totalRouteMiles = leg.summary.length || 1;
               const osmSignalDensity = explicitSignalsTotal / totalRouteMiles;
 
@@ -580,7 +571,6 @@
           console.warn("trace_attributes fallback to maneuver heuristics:", traceErr);
         }
 
-        // Fallback if trace_attributes didn't return edges
         if (extracted.length === 0) {
           for (const m of leg.maneuvers) {
             if (m.length <= 0) continue;
@@ -693,7 +683,6 @@
         weightedActualSpeed += res.actualSpeed * res.distanceMiles;
         weightedDriverMult += res.driverMultiplier * res.distanceMiles;
 
-        // Only accumulate pedestrian risk on surface streets (exclude controlled-access motorways)
         if (res.highwayType !== 'motorway') {
           pedAccessibleDist += res.distanceMiles;
           weightedPedLimit += res.pedProbLimit * res.distanceMiles;
@@ -710,12 +699,10 @@
       const BASE_DRIVER_FATAL_PCT = 0.50;
       const driverActualPct = Math.min(100, BASE_DRIVER_FATAL_PCT * driverMult);
 
-      // Update Map Summary Bar
       document.getElementById('mapDistLabel').textContent = `${totalDist.toFixed(1)} miles`;
       document.getElementById('mapAvgLimitLabel').textContent = `${Math.round(avgLimit)} mph`;
       document.getElementById('mapSignalsLabel').textContent = `${roundedSignals} lights`;
 
-      // Update Offset Header & Stopping Distance
       const badge = document.getElementById('offsetBadge');
       if (offset > 0) {
         badge.textContent = `+${offset} mph Over Limit`;
@@ -733,7 +720,6 @@
       document.getElementById('stoppingDistLabel').textContent =
         `${getStoppingDistanceFt(avgActual)} ft (vs ${getStoppingDistanceFt(avgLimit)} ft at limit)`;
 
-      // Update Card 1: Time Saved / Cost (Driven by effectiveSpeedDelta to avoid sign inversion)
       const timeTitle = document.getElementById('timeCardTitle');
       const timeHead = document.getElementById('timeHeadline');
       if (effectiveSpeedDelta >= 0) {
@@ -758,13 +744,11 @@
       document.getElementById('timeEverydayContext').textContent =
         getEverydayContext(sumRealSavedSec, effectiveSpeedDelta);
 
-      // Update Card 2: Pedestrian Absolute Risk & Multiplier
       const pedHead = document.getElementById('pedHeadline');
       const pedUnit = document.getElementById('pedHeadlineUnit');
       const pedSub = document.getElementById('pedMultiplierSub');
 
       if (pedAccessibleDist <= 0.001) {
-        // 100% Controlled-Access Freeway
         pedHead.textContent = "N/A";
         pedHead.className = "text-4xl font-extrabold text-slate-400 tracking-tight";
         pedUnit.textContent = "controlled-access freeway";
@@ -800,7 +784,6 @@
         }
       }
 
-      // Update Card 3: Driver Absolute Risk & Multiplier
       const drvHead = document.getElementById('driverHeadline');
       const drvSub = document.getElementById('driverMultiplierSub');
       drvHead.textContent = `${driverActualPct.toFixed(2)}%`;
